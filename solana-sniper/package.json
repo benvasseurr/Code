@@ -1,0 +1,27 @@
+{
+  "name": "solana-sniper",
+  "version": "1.0.0",
+  "description": "Solana wallet tracking and token sniping bot",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "cli": "ts-node src/index.ts cli"
+  },
+  "dependencies": {
+    "@solana/spl-token": "^0.4.6",
+    "@solana/web3.js": "^1.95.4",
+    "axios": "^1.7.7",
+    "bs58": "^5.0.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "winston": "^3.14.2"
+  },
+  "devDependencies": {
+    "@types/bs58": "^4.0.4",
+    "@types/node": "^22.5.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}
