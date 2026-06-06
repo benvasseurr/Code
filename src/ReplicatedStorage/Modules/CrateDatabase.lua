@@ -1,79 +1,93 @@
 -- CrateDatabase.lua
--- Defines all available crates, their costs, and which item pool they draw from.
+-- Three crates with pools drawn from real Roblox limited items.
 
 local CrateDatabase = {}
-
--- Item pool: list of item Ids eligible to drop from this crate.
--- An empty pool means the crate can drop any item in ItemDatabase.
--- Rarity weights from ItemDatabase are always applied on top.
 
 CrateDatabase.Crates = {
 	{
 		Id          = "starter_crate",
 		DisplayName = "Starter Crate",
-		Description = "A basic crate for newcomers. Contains weapons and accessories.",
+		Description = "Common and Uncommon Roblox limiteds. Great for beginners.",
 		Cost        = 100,
 		Color       = Color3.fromRGB(100, 160, 255),
-		ImageId     = "rbxassetid://6023426912",
-		-- Overridden rarity weights for this crate (nil = use defaults)
+		ImageId     = "rbxthumb://type=Asset&id=63995612&w=150&h=150",
 		RarityWeights = {
-			Common    = 65,
-			Uncommon  = 25,
-			Rare      = 8,
-			Epic      = 2,
+			Common    = 60,
+			Uncommon  = 30,
+			Rare      = 9,
+			Epic      = 1,
 			Legendary = 0,
 		},
 		ItemPool = {
-			"sword_basic", "hat_simple", "badge_bronze", "backpack_worn", "ring_copper",
-			"sword_iron",  "hat_jester", "shield_wood",  "boots_leather", "badge_silver",
-			"sword_steel", "hat_wizard", "shield_iron",  "ring_silver",   "cloak_shadows",
-			"sword_enchanted", "hat_crown", "wings_obsidian", "ring_gold",
+			-- Commons
+			"toy_fall", "freezing_elf_torso", "adventurous_hiker_leg",
+			"rugged_survivalist_arm", "locomotion_astronaut_jump",
+			"concerned_head", "bold_swim",
+			-- Uncommons
+			"colonels_cavalry_sabre", "buckled_stove_top_hat", "weekend_warrior",
+			"green_slate_hood", "pig_snout_hat", "crumbled_sandcastle_hat", "party_gents_cap",
+			-- Rare
+			"robot_ninja", "fire_ruby_crest", "slime_sunglasses",
+			-- Epic (rare chance)
+			"emerald_ambassador",
 		},
 	},
 	{
 		Id          = "warrior_crate",
 		DisplayName = "Warrior Crate",
-		Description = "Packed with combat gear and rare blades.",
+		Description = "Rare and Epic Roblox limiteds. Higher stakes.",
 		Cost        = 300,
 		Color       = Color3.fromRGB(220, 80, 80),
-		ImageId     = "rbxassetid://6023426912",
+		ImageId     = "rbxthumb://type=Asset&id=8664999198&w=150&h=150",
 		RarityWeights = {
-			Common    = 50,
-			Uncommon  = 28,
-			Rare      = 15,
-			Epic      = 6,
-			Legendary = 1,
+			Common    = 20,
+			Uncommon  = 30,
+			Rare      = 35,
+			Epic      = 13,
+			Legendary = 2,
 		},
 		ItemPool = {
-			"sword_basic",     "sword_iron",    "sword_steel",
-			"sword_enchanted", "sword_legendary",
-			"shield_wood",     "shield_iron",
-			"boots_leather",   "cloak_shadows",
+			-- Commons
+			"toy_fall", "bold_swim", "concerned_head",
+			-- Uncommons
+			"colonels_cavalry_sabre", "weekend_warrior", "pig_snout_hat",
+			-- Rares
+			"robot_ninja", "fire_ruby_crest", "slime_sunglasses",
+			"unbeelievable_disguise", "retro_shades", "azure_mines_pickaxe", "deluxe_slime_ray",
+			-- Epics
+			"chrononaut_knight", "galaxy_zack", "emerald_ambassador",
+			"double_sided_techno_axe", "tiger_mask",
+			-- Legendary (small chance)
+			"tython", "split_equinox",
 		},
 	},
 	{
 		Id          = "prestige_crate",
 		DisplayName = "Prestige Crate",
-		Description = "The ultimate crate. High chance of Epic and Legendary items.",
+		Description = "The ultimate crate. Real chance at Legendary Roblox limiteds.",
 		Cost        = 1000,
 		Color       = Color3.fromRGB(255, 200, 30),
-		ImageId     = "rbxassetid://6023426912",
+		ImageId     = "rbxthumb://type=Asset&id=21070012&w=150&h=150",
 		RarityWeights = {
-			Common    = 20,
-			Uncommon  = 25,
+			Common    = 5,
+			Uncommon  = 10,
 			Rare      = 30,
-			Epic      = 18,
-			Legendary = 7,
+			Epic      = 35,
+			Legendary = 20,
 		},
 		ItemPool = {
-			"sword_steel",      "hat_wizard",      "shield_iron",    "ring_silver",    "cloak_shadows",
-			"sword_enchanted",  "hat_crown",        "wings_obsidian", "ring_gold",
-			"sword_legendary",  "hat_dominus",      "wings_celestial","aura_rainbow",
+			-- Rares
+			"unbeelievable_disguise", "retro_shades", "azure_mines_pickaxe",
+			"deluxe_slime_ray", "slime_sunglasses",
+			-- Epics
+			"chrononaut_knight", "galaxy_zack", "emerald_ambassador",
+			"double_sided_techno_axe", "tiger_mask",
+			-- Legendaries
+			"dominus_empyreus", "headless_horseman", "split_equinox", "tython",
 		},
 	},
 }
 
--- Build lookup by Id
 CrateDatabase.ById = {}
 for _, crate in ipairs(CrateDatabase.Crates) do
 	CrateDatabase.ById[crate.Id] = crate
