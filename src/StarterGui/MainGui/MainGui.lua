@@ -33,7 +33,7 @@ end
 local function gridLayout(parent, cellSize, cellPad)
 	local g = Instance.new("UIGridLayout", parent)
 	g.CellSize    = cellSize or UDim2.new(0, 110, 0, 130)
-	g.CellPaddingUDim2 = cellPad or UDim2.new(0, 8, 0, 8)
+	g.CellPadding = cellPad or UDim2.new(0, 8, 0, 8)
 	g.SortOrder   = Enum.SortOrder.LayoutOrder
 	return g
 end

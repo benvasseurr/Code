@@ -1,6 +1,5 @@
--- DataManager.server.lua
+-- DataManager.lua  (paste into a ModuleScript named DataManager in ServerScriptService)
 -- Handles loading and saving player data via DataStore.
--- Exposes a module-like API used by GameServer.
 
 local DataStoreService = game:GetService("DataStoreService")
 local Players          = game:GetService("Players")
