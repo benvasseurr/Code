@@ -5,9 +5,10 @@ local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService      = game:GetService("TweenService")
 
-local SharedConfig  = require(ReplicatedStorage.Modules.SharedConfig)
-local ItemDatabase  = require(ReplicatedStorage.Modules.ItemDatabase)
-local CrateDatabase = require(ReplicatedStorage.Modules.CrateDatabase)
+local Modules       = ReplicatedStorage:WaitForChild("Modules")
+local SharedConfig  = require(Modules:WaitForChild("SharedConfig"))
+local ItemDatabase  = require(Modules:WaitForChild("ItemDatabase"))
+local CrateDatabase = require(Modules:WaitForChild("CrateDatabase"))
 
 -- Wait for remotes folder
 local Remotes              = ReplicatedStorage:WaitForChild("Remotes", 10)

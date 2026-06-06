@@ -4,10 +4,11 @@
 local Players          = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local SharedConfig  = require(ReplicatedStorage.Modules.SharedConfig)
-local ItemDatabase  = require(ReplicatedStorage.Modules.ItemDatabase)
-local CrateDatabase = require(ReplicatedStorage.Modules.CrateDatabase)
-local DataManager   = require(script.Parent.DataManager)
+local Modules       = ReplicatedStorage:WaitForChild("Modules")
+local SharedConfig  = require(Modules:WaitForChild("SharedConfig"))
+local ItemDatabase  = require(Modules:WaitForChild("ItemDatabase"))
+local CrateDatabase = require(Modules:WaitForChild("CrateDatabase"))
+local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- Remote setup (created once here; client accesses via WaitForChild)
