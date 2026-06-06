@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOL Sniper — Dashboard</title>
+  <style>
+    /* ── Reset & Base ──────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f0f1a;
+      --bg2:       #14142a;
+      --bg3:       #1a1a35;
+      --border:    #2a2a4a;
+      --green:     #00ff88;
+      --green-dim: #00c866;
+      --purple:    #a855f7;
+      --purple-dim:#7c3aed;
+      --yellow:    #fbbf24;
+      --red:       #f87171;
+      --blue:      #60a5fa;
+      --text:      #e2e8f0;
+      --text-dim:  #94a3b8;
+      --text-muted:#475569;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+      --font-ui:   system-ui, -apple-system, sans-serif;
+      --radius:    8px;
+      --radius-sm: 4px;
+      --shadow:    0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 14px;
+      line-height: 1.5;
+      overflow: hidden;
+    }
+
+    /* ── Scrollbar ────────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--purple-dim); }
+
+    /* ── Layout: full-height grid ─────────────────────────────────────────── */
+    #app {
+      display: grid;
+      grid-template-rows: 56px 1fr 52px;
+      grid-template-columns: 1fr;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Top Nav ──────────────────────────────────────────────────────────── */
+    #nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      grid-row: 1;
+      z-index: 50;
+    }
+
+    #nav .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: -0.5px;
+      text-decoration: none;
+    }
+
+    #nav .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--purple), var(--green));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+
+    #nav .spacer { flex: 1; }
+
+    .conn-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .conn-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      transition: background 0.3s;
+      position: relative;
+    }
+
+    .conn-dot.live {
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4);
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%   { box-shadow: 0 0 0 0   rgba(0,255,136,0.4); }
+      70%  { box-shadow: 0 0 0 8px rgba(0,255,136,0);   }
+      100% { box-shadow: 0 0 0 0   rgba(0,255,136,0);   }
+    }
+
+    #sol-balance {
+      padding: 6px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--yellow);
+    }
+
+    #btn-settings {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+    #btn-settings:hover { border-color: var(--purple); color: var(--purple); }
+
+    /* ── Main 3-column body ───────────────────────────────────────────────── */
+    #body {
+      display: grid;
+      grid-template-columns: 300px 1fr 280px;
+      gap: 0;
+      overflow: hidden;
+      grid-row: 2;
+    }
+
+    /* ── Panel base ───────────────────────────────────────────────────────── */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+    .panel:last-child { border-right: none; }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .panel-header .panel-icon { font-size: 14px; }
+    .panel-header .badge {
+      margin-left: auto;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .panel-scroll { flex: 1; overflow-y: auto; }
+
+    /* ── Left: Wallets Panel ──────────────────────────────────────────────── */
+    #panel-wallets { background: var(--bg); }
+
+    /* Add wallet form */
+    #add-wallet-form {
+      padding: 12px 14px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .form-row { display: flex; gap: 6px; }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]::placeholder { color: var(--text-muted); }
+    input[type="text"]:focus { border-color: var(--purple); }
+
+    button.btn {
+      background: linear-gradient(135deg, var(--purple-dim), var(--purple));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    button.btn:hover { opacity: 0.9; }
+    button.btn:active { transform: scale(0.97); }
+    button.btn-sm {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+    button.btn-danger {
+      background: linear-gradient(135deg, #7f1d1d, var(--red));
+    }
+    button.btn-ghost {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    button.btn-ghost:hover { border-color: var(--red); color: var(--red); background: var(--bg3); }
+
+    /* Wallet rows */
+    .wallet-row {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+      animation: slide-in 0.25s ease;
+    }
+    .wallet-row:hover { background: var(--bg2); }
+
+    .wallet-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .wallet-alias {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px;
+    }
+
+    .wallet-addr {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .wallet-meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .meta-chip {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2px 7px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+    .chip-green { color: var(--green); border-color: rgba(0,255,136,0.2); }
+    .chip-red   { color: var(--red);   border-color: rgba(248,113,113,0.2); }
+    .chip-blue  { color: var(--blue);  border-color: rgba(96,165,250,0.2); }
+
+    /* Score bar */
+    .score-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .score-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--purple);
+      width: 28px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .score-track {
+      flex: 1;
+      height: 6px;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .score-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--purple-dim), var(--purple), var(--green));
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Center: Activity Feed ────────────────────────────────────────────── */
+    #panel-activity { background: var(--bg); }
+
+    #activity-list {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      transition: opacity 0.3s;
+      animation: slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .activity-item.type-snipe    { border-left: 3px solid var(--green); }
+    .activity-item.type-detected { border-left: 3px solid var(--yellow); }
+    .activity-item.type-error    { border-left: 3px solid var(--red); }
+    .activity-item.type-score_update { border-left: 3px solid var(--purple); }
+    .activity-item.type-info     { border-left: 3px solid var(--blue); }
+
+    .act-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+      width: 18px;
+      text-align: center;
+      margin-top: 1px;
+    }
+
+    .act-body { flex: 1; min-width: 0; }
+
+    .act-msg {
+      color: var(--text);
+      line-height: 1.4;
+      word-break: break-all;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+    }
+
+    .act-time {
+      color: var(--text-muted);
+      font-size: 10px;
+      margin-top: 2px;
+      font-family: var(--font-mono);
+    }
+
+    .activity-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--text-muted);
+      font-size: 13px;
+      gap: 8px;
+    }
+    .activity-empty .empty-icon { font-size: 32px; opacity: 0.4; }
+
+    /* ── Right: Leaderboard ───────────────────────────────────────────────── */
+    #panel-leaderboard { background: var(--bg); border-right: none; }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+      animation: slide-in 0.25s ease;
+    }
+    .lb-row:hover { background: var(--bg2); }
+
+    .lb-rank {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      width: 18px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .lb-rank.top1 { color: var(--yellow); font-weight: 700; }
+    .lb-rank.top2 { color: var(--text-dim); font-weight: 600; }
+    .lb-rank.top3 { color: #c07040; font-weight: 600; }
+
+    .lb-info { flex: 1; min-width: 0; }
+    .lb-name {
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lb-addr {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .lb-score-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .lb-score-num {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--purple);
+    }
+
+    /* Win sparkline */
+    .sparkline {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 16px;
+    }
+    .spark-bar {
+      width: 4px;
+      border-radius: 2px;
+      background: var(--border);
+    }
+    .spark-bar.win  { background: var(--green); }
+    .spark-bar.rug  { background: var(--red); }
+    .spark-bar.none { background: var(--border); }
+
+    /* ── Bottom Stats Bar ─────────────────────────────────────────────────── */
+    #stats-bar {
+      grid-row: 3;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0 16px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:first-child { padding-left: 0; }
+    .stat-item:last-child  { border-right: none; }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .stat-value.green  { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.purple { color: var(--purple); }
+    .stat-value.muted  { color: var(--text-muted); }
+
+    #stats-bar .spacer { flex: 1; }
+
+    .status-text {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ── Settings Modal ───────────────────────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 480px;
+      max-width: 95vw;
+      box-shadow: var(--shadow);
+      animation: modal-in 0.2s ease;
+    }
+
+    @keyframes modal-in {
+      from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field-input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .field-input:focus { border-color: var(--purple); }
+
+    .field-hint {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* ── Toast notifications ──────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 10px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      box-shadow: var(--shadow);
+      animation: toast-in 0.3s ease;
+      pointer-events: auto;
+      max-width: 300px;
+    }
+    .toast.success { border-left: 3px solid var(--green); color: var(--green); }
+    .toast.error   { border-left: 3px solid var(--red);   color: var(--red); }
+    .toast.info    { border-left: 3px solid var(--blue);  color: var(--blue); }
+
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes toast-out {
+      from { opacity: 1; }
+      to   { opacity: 0; transform: translateX(20px); }
+    }
+
+    /* ── Utility ──────────────────────────────────────────────────────────── */
+    .text-green  { color: var(--green); }
+    .text-purple { color: var(--purple); }
+    .text-yellow { color: var(--yellow); }
+    .text-red    { color: var(--red); }
+    .text-dim    { color: var(--text-dim); }
+    .text-muted  { color: var(--text-muted); }
+
+    .divider { border: none; border-top: 1px solid var(--border); }
+
+    .empty-state {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .empty-state .empty-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── Top Nav ────────────────────────────────────────────────────────────── -->
+  <nav id="nav">
+    <a class="logo" href="#">
+      <div class="logo-icon">⚡</div>
+      SOL Sniper
+    </a>
+
+    <div class="conn-badge">
+      <div class="conn-dot" id="conn-dot"></div>
+      <span id="conn-status">Connecting…</span>
+    </div>
+
+    <div id="sol-balance">◎ -.-- SOL</div>
+
+    <div class="spacer"></div>
+
+    <button id="btn-settings" title="Settings">⚙</button>
+  </nav>
+
+  <!-- ── Main Body ──────────────────────────────────────────────────────────── -->
+  <div id="body">
+
+    <!-- Left: Tracked Wallets -->
+    <div class="panel" id="panel-wallets">
+      <div class="panel-header">
+        <span class="panel-icon">👛</span>
+        Tracked Wallets
+        <span class="badge" id="wallet-count">0</span>
+      </div>
+
+      <div id="add-wallet-form">
+        <input type="text" id="input-address" placeholder="Wallet address (base58)…" />
+        <div class="form-row">
+          <input type="text" id="input-alias" placeholder="Alias (optional)" />
+          <button class="btn" id="btn-add-wallet">Add</button>
+        </div>
+      </div>
+
+      <div class="panel-scroll" id="wallet-list-wrap">
+        <div id="wallet-list"></div>
+      </div>
+    </div>
+
+    <!-- Center: Activity Feed -->
+    <div class="panel" id="panel-activity">
+      <div class="panel-header">
+        <span class="panel-icon">📡</span>
+        Live Activity Feed
+        <span class="badge" id="activity-count">0</span>
+      </div>
+      <div class="panel-scroll">
+        <div id="activity-list">
+          <div class="activity-empty">
+            <div class="empty-icon">📡</div>
+            <div>Waiting for live events…</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Events appear here as they happen</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Leaderboard -->
+    <div class="panel" id="panel-leaderboard">
+      <div class="panel-header">
+        <span class="panel-icon">🏆</span>
+        Dev Leaderboard
+        <span class="badge" id="lb-count">0</span>
+      </div>
+      <div class="panel-scroll">
+        <div id="leaderboard-list">
+          <div class="empty-state">
+            <div class="empty-icon">🏆</div>
+            <div>No wallets tracked yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /#body -->
+
+  <!-- ── Bottom Stats Bar ───────────────────────────────────────────────────── -->
+  <div id="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">Snipes Today</span>
+      <span class="stat-value green" id="stat-snipes">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">SOL Spent</span>
+      <span class="stat-value yellow" id="stat-sol">0.000</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Est. P&amp;L</span>
+      <span class="stat-value purple" id="stat-pnl">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Tracked Devs</span>
+      <span class="stat-value purple" id="stat-devs">0</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="status-text" id="status-text">Initializing…</div>
+  </div>
+
+</div><!-- /#app -->
+
+<!-- ── Settings Modal ─────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">⚙ Settings</span>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">BUY_AMOUNT_SOL</label>
+          <input class="field-input" id="cfg-buy-amount" type="number" step="0.01" placeholder="0.1" />
+          <div class="field-hint">SOL per snipe</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">SLIPPAGE_BPS</label>
+          <input class="field-input" id="cfg-slippage" type="number" step="50" placeholder="500" />
+          <div class="field-hint">Basis points (100 = 1%)</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">MIN_DEV_SCORE</label>
+          <input class="field-input" id="cfg-min-score" type="number" step="1" placeholder="50" />
+          <div class="field-hint">Min score to snipe (0-100)</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">PRIORITY_FEE_MICROLAMPORTS</label>
+          <input class="field-input" id="cfg-priority-fee" type="number" step="10000" placeholder="100000" />
+          <div class="field-hint">Tx priority fee</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="btn-modal-cancel">Cancel</button>
+      <button class="btn" id="btn-save-config">Save to .env</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast Container ────────────────────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+//  SOL Sniper Dashboard — Client JS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── State ────────────────────────────────────────────────────────────────────
+const state = {
+  wallets: [],         // DevWallet[]
+  activityEvents: [],  // ActivityEvent[]
+  stats: { snipesToday: 0, solSpentToday: 0, pnlEstimate: null },
+  connected: false,
+  ws: null,
+  reconnectTimer: null,
+  reconnectDelay: 1500,
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function truncate(str, start = 6, end = 4) {
+  if (!str) return '—';
+  if (str.length <= start + end + 3) return str;
+  return `${str.slice(0, start)}…${str.slice(-end)}`;
+}
+
+function fmtTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function fmtSol(n) {
+  return (typeof n === 'number' ? n : 0).toFixed(3);
+}
+
+function fmtUsd(n) {
+  if (!n || n === 0) return '$0';
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000)     return `$${(n / 1_000).toFixed(1)}K`;
+  return `$${n.toFixed(0)}`;
+}
+
+function scoreColor(score) {
+  if (score >= 70) return '#00ff88';
+  if (score >= 40) return '#fbbf24';
+  return '#f87171';
+}
+
+function activityIcon(type) {
+  switch (type) {
+    case 'snipe':        return '🎯';
+    case 'detected':     return '🔍';
+    case 'error':        return '❌';
+    case 'score_update': return '📊';
+    default:             return 'ℹ️';
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg, kind = 'info', duration = 3500) {
+  const el = document.createElement('div');
+  el.className = `toast ${kind}`;
+  el.textContent = msg;
+  const container = document.getElementById('toast-container');
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'toast-out 0.3s ease forwards';
+    setTimeout(() => el.remove(), 300);
+  }, duration);
+}
+
+// ── Render: Wallets ───────────────────────────────────────────────────────────
+function renderWallets() {
+  const list = document.getElementById('wallet-list');
+  const wallets = state.wallets;
+
+  document.getElementById('wallet-count').textContent = wallets.length;
+  document.getElementById('stat-devs').textContent = wallets.length;
+
+  if (wallets.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">👛</div>
+        <div>No wallets tracked yet</div>
+        <div style="margin-top:4px;font-size:11px">Add a dev wallet above to start tracking</div>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = wallets.map(w => {
+    const score = w.score ?? 0;
+    const alias = w.alias || truncate(w.address);
+    const winRate = w.totalTokens > 0 ? Math.round((w.wins / w.totalTokens) * 100) : 0;
+    const barColor = scoreColor(score);
+    return `
+      <div class="wallet-row" data-addr="${w.address}">
+        <div class="wallet-top">
+          <span class="wallet-alias" title="${w.address}">${alias}</span>
+          <button class="btn btn-sm btn-ghost" onclick="removeWallet('${w.address}')" title="Remove wallet">✕</button>
+        </div>
+        <div class="wallet-addr">${truncate(w.address, 10, 6)}</div>
+        <div class="wallet-meta">
+          <span class="meta-chip chip-green" title="Win rate">W: ${winRate}%</span>
+          <span class="meta-chip chip-red"   title="Rugs">R: ${w.rugs ?? 0}</span>
+          <span class="meta-chip chip-blue"  title="Total tokens">T: ${w.totalTokens ?? 0}</span>
+        </div>
+        <div class="score-bar-wrap">
+          <span class="score-label">${score.toFixed(0)}</span>
+          <div class="score-track">
+            <div class="score-fill" style="width:${Math.min(score, 100)}%;background:linear-gradient(90deg,#7c3aed,${barColor})"></div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Render: Leaderboard ───────────────────────────────────────────────────────
+function renderLeaderboard() {
+  const list = document.getElementById('leaderboard-list');
+  const sorted = [...state.wallets].sort((a, b) => b.score - a.score).slice(0, 20);
+
+  document.getElementById('lb-count').textContent = sorted.length;
+
+  if (sorted.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🏆</div><div>No wallets yet</div></div>`;
+    return;
+  }
+
+  list.innerHTML = sorted.map((w, i) => {
+    const rank = i + 1;
+    const rankClass = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
+    const rankSymbol = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    const alias = w.alias || truncate(w.address, 8, 4);
+    const tokens = w.tokens ?? [];
+
+    // Build sparkline: last 10 tokens, win=green rug=red else dim
+    const recent = tokens.slice(-10);
+    const sparks = Array.from({ length: 10 }, (_, idx) => {
+      const t = recent[idx];
+      if (!t) return '<div class="spark-bar" style="height:4px"></div>';
+      const h = t.rugProbability > 0.7 ? 4 : t.peakMarketCapUsd >= 100000 ? 16 : 8;
+      const cls = t.rugProbability > 0.7 ? 'rug' : t.peakMarketCapUsd >= 100000 ? 'win' : 'none';
+      return `<div class="spark-bar ${cls}" style="height:${h}px"></div>`;
+    }).join('');
+
+    return `
+      <div class="lb-row">
+        <div class="lb-rank ${rankClass}">${rankSymbol}</div>
+        <div class="lb-info">
+          <div class="lb-name" title="${w.address}">${alias}</div>
+          <div class="lb-addr">${truncate(w.address, 6, 4)}</div>
+        </div>
+        <div class="lb-score-col">
+          <div class="lb-score-num" style="color:${scoreColor(w.score)}">${(w.score ?? 0).toFixed(1)}</div>
+          <div class="sparkline">${sparks}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Render: Activity ──────────────────────────────────────────────────────────
+function renderActivityList() {
+  const list = document.getElementById('activity-list');
+  const events = state.activityEvents;
+  document.getElementById('activity-count').textContent = events.length;
+
+  if (events.length === 0) {
+    list.innerHTML = `
+      <div class="activity-empty">
+        <div class="empty-icon">📡</div>
+        <div>Waiting for live events…</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Events appear here as they happen</div>
+      </div>`;
+    return;
+  }
+  // Render all items — new ones will slide-in via CSS
+  list.innerHTML = events.map(e => `
+    <div class="activity-item type-${e.type}">
+      <div class="act-icon">${activityIcon(e.type)}</div>
+      <div class="act-body">
+        <div class="act-msg">${escHtml(e.message)}</div>
+        <div class="act-time">${fmtTime(e.timestamp)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function prependActivity(event) {
+  // Remove empty state if present
+  const list = document.getElementById('activity-list');
+  const empty = list.querySelector('.activity-empty');
+  if (empty) empty.remove();
+
+  // Prepend new item
+  const el = document.createElement('div');
+  el.className = `activity-item type-${event.type}`;
+  el.innerHTML = `
+    <div class="act-icon">${activityIcon(event.type)}</div>
+    <div class="act-body">
+      <div class="act-msg">${escHtml(event.message)}</div>
+      <div class="act-time">${fmtTime(event.timestamp)}</div>
+    </div>`;
+  list.insertBefore(el, list.firstChild);
+
+  // Trim DOM to 100 items
+  while (list.children.length > 100) list.removeChild(list.lastChild);
+
+  document.getElementById('activity-count').textContent =
+    Math.min(state.activityEvents.length, 100);
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── Render: Stats Bar ─────────────────────────────────────────────────────────
+function renderStats() {
+  const s = state.stats;
+  document.getElementById('stat-snipes').textContent = s.snipesToday ?? 0;
+  document.getElementById('stat-sol').textContent = fmtSol(s.solSpentToday);
+  document.getElementById('stat-pnl').textContent = s.pnlEstimate != null
+    ? (s.pnlEstimate >= 0 ? '+' : '') + fmtSol(s.pnlEstimate) + ' SOL'
+    : '—';
+}
+
+// ── Connection Status ─────────────────────────────────────────────────────────
+function setConnected(on) {
+  state.connected = on;
+  const dot = document.getElementById('conn-dot');
+  const label = document.getElementById('conn-status');
+  const status = document.getElementById('status-text');
+  if (on) {
+    dot.classList.add('live');
+    label.textContent = 'Live';
+    status.textContent = 'Connected · ' + new Date().toLocaleTimeString();
+  } else {
+    dot.classList.remove('live');
+    label.textContent = 'Disconnected';
+    status.textContent = 'Reconnecting…';
+  }
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────────────
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const url = `${proto}://${location.host}/ws`;
+  const ws = new WebSocket(url);
+  state.ws = ws;
+
+  ws.onopen = () => {
+    setConnected(true);
+    state.reconnectDelay = 1500;
+    showToast('Dashboard connected', 'success', 2000);
+  };
+
+  ws.onmessage = (evt) => {
+    let msg;
+    try { msg = JSON.parse(evt.data); } catch { return; }
+    handleWSMessage(msg);
+  };
+
+  ws.onclose = () => {
+    setConnected(false);
+    scheduleReconnect();
+  };
+
+  ws.onerror = () => {
+    ws.close();
+  };
+}
+
+function scheduleReconnect() {
+  if (state.reconnectTimer) return;
+  state.reconnectTimer = setTimeout(() => {
+    state.reconnectTimer = null;
+    state.reconnectDelay = Math.min(state.reconnectDelay * 1.5, 30000);
+    connectWS();
+  }, state.reconnectDelay);
+}
+
+// ── WebSocket message handler ─────────────────────────────────────────────────
+function handleWSMessage(msg) {
+  switch (msg.type) {
+    case 'snapshot': {
+      const { wallets, activity, stats } = msg.payload;
+      state.wallets = wallets ?? [];
+      state.activityEvents = activity ?? [];
+      state.stats = stats ?? state.stats;
+      renderWallets();
+      renderLeaderboard();
+      renderActivityList();
+      renderStats();
+      break;
+    }
+    case 'activity': {
+      const ev = msg.payload;
+      state.activityEvents.unshift(ev);
+      if (state.activityEvents.length > 500) state.activityEvents.length = 500;
+      prependActivity(ev);
+      break;
+    }
+    case 'wallet_added': {
+      const w = msg.payload;
+      const idx = state.wallets.findIndex(x => x.address === w.address);
+      if (idx >= 0) state.wallets[idx] = w; else state.wallets.unshift(w);
+      renderWallets();
+      renderLeaderboard();
+      break;
+    }
+    case 'wallet_removed': {
+      const { address } = msg.payload;
+      state.wallets = state.wallets.filter(w => w.address !== address);
+      renderWallets();
+      renderLeaderboard();
+      break;
+    }
+    case 'score_update': {
+      const { address, score } = msg.payload;
+      const w = state.wallets.find(x => x.address === address);
+      if (w) { w.score = score; renderWallets(); renderLeaderboard(); }
+      break;
+    }
+    case 'stats': {
+      state.stats = { ...state.stats, ...msg.payload };
+      renderStats();
+      break;
+    }
+    case 'new_token':
+    case 'snipe':
+      // Handled via activity events pushed separately
+      break;
+  }
+}
+
+// ── Keep-alive ping ───────────────────────────────────────────────────────────
+setInterval(() => {
+  if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+    state.ws.send(JSON.stringify({ type: 'ping' }));
+  }
+}, 25000);
+
+// ── Add Wallet ────────────────────────────────────────────────────────────────
+document.getElementById('btn-add-wallet').addEventListener('click', addWallet);
+document.getElementById('input-address').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addWallet();
+});
+document.getElementById('input-alias').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addWallet();
+});
+
+async function addWallet() {
+  const address = document.getElementById('input-address').value.trim();
+  const alias   = document.getElementById('input-alias').value.trim();
+  if (!address) { showToast('Enter a wallet address', 'error'); return; }
+
+  try {
+    const res = await fetch('/api/wallets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address, alias: alias || undefined }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      showToast(`Error: ${err.error}`, 'error');
+      return;
+    }
+    document.getElementById('input-address').value = '';
+    document.getElementById('input-alias').value = '';
+    showToast(`Wallet added${alias ? ` (${alias})` : ''}`, 'success');
+  } catch (e) {
+    showToast(`Network error: ${e.message}`, 'error');
+  }
+}
+
+// ── Remove Wallet ─────────────────────────────────────────────────────────────
+async function removeWallet(address) {
+  if (!confirm(`Remove wallet ${truncate(address)}?`)) return;
+  try {
+    const res = await fetch(`/api/wallets/${encodeURIComponent(address)}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json();
+      showToast(`Error: ${err.error}`, 'error');
+      return;
+    }
+    showToast('Wallet removed', 'info');
+  } catch (e) {
+    showToast(`Network error: ${e.message}`, 'error');
+  }
+}
+
+// ── Settings Modal ────────────────────────────────────────────────────────────
+const modal = document.getElementById('settings-modal');
+
+document.getElementById('btn-settings').addEventListener('click', openSettings);
+document.getElementById('modal-close').addEventListener('click', closeSettings);
+document.getElementById('btn-modal-cancel').addEventListener('click', closeSettings);
+modal.addEventListener('click', e => { if (e.target === modal) closeSettings(); });
+
+async function openSettings() {
+  modal.classList.add('open');
+  try {
+    const res = await fetch('/api/config');
+    if (!res.ok) return;
+    const cfg = await res.json();
+    document.getElementById('cfg-buy-amount').value  = cfg.BUY_AMOUNT_SOL ?? '';
+    document.getElementById('cfg-slippage').value    = cfg.SLIPPAGE_BPS ?? '';
+    document.getElementById('cfg-min-score').value   = cfg.MIN_DEV_SCORE ?? '';
+    document.getElementById('cfg-priority-fee').value = cfg.PRIORITY_FEE_MICROLAMPORTS ?? '';
+  } catch {}
+}
+
+function closeSettings() {
+  modal.classList.remove('open');
+}
+
+document.getElementById('btn-save-config').addEventListener('click', async () => {
+  const body = {
+    BUY_AMOUNT_SOL:            parseFloat(document.getElementById('cfg-buy-amount').value)  || undefined,
+    SLIPPAGE_BPS:              parseInt(document.getElementById('cfg-slippage').value, 10)   || undefined,
+    MIN_DEV_SCORE:             parseFloat(document.getElementById('cfg-min-score').value)    || undefined,
+    PRIORITY_FEE_MICROLAMPORTS: parseInt(document.getElementById('cfg-priority-fee').value, 10) || undefined,
+  };
+  // Remove undefined keys
+  Object.keys(body).forEach(k => body[k] === undefined && delete body[k]);
+
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      showToast('Config saved to .env', 'success');
+      closeSettings();
+    } else {
+      const err = await res.json();
+      showToast(`Save failed: ${err.error}`, 'error');
+    }
+  } catch (e) {
+    showToast(`Network error: ${e.message}`, 'error');
+  }
+});
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSettings();
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+connectWS();
+setConnected(false);
+
+// Periodically refresh wallets from REST (backup to WS)
+setInterval(async () => {
+  try {
+    const res = await fetch('/api/wallets');
+    if (!res.ok) return;
+    const { wallets } = await res.json();
+    state.wallets = wallets;
+    renderWallets();
+    renderLeaderboard();
+  } catch {}
+}, 30000);
+
+// Refresh stats every 10s
+setInterval(async () => {
+  try {
+    const res = await fetch('/api/stats');
+    if (!res.ok) return;
+    state.stats = await res.json();
+    renderStats();
+  } catch {}
+}, 10000);
+</script>
+
+</body>
+</html>
