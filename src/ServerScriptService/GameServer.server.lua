@@ -61,31 +61,35 @@ end
 
 -- Roll a single item from a crate's pool
 local function rollItem(crate)
-	-- Filter rarity weights to non-zero entries
 	local weights = {}
 	for rarity, w in pairs(crate.RarityWeights) do
-		if w > 0 and ItemDatabase.ByRarity[rarity] then
-			weights[rarity] = w
-		end
+		if w > 0 then weights[rarity] = w end
 	end
 
 	local chosenRarity = weightedRandom(weights)
 
-	-- Collect eligible items of that rarity within the pool set
 	local poolSet = {}
 	for _, id in ipairs(crate.ItemPool) do poolSet[id] = true end
 
+	-- Find eligible items by scanning ItemDatabase.Items directly
 	local eligible = {}
-	for _, item in ipairs(ItemDatabase.ByRarity[chosenRarity] or {}) do
-		if poolSet[item.Id] then
+	for _, item in ipairs(ItemDatabase.Items) do
+		if item.Rarity == chosenRarity and poolSet[item.Id] then
 			table.insert(eligible, item)
 		end
 	end
 
-	-- If nothing eligible (shouldn't happen with valid data), fall back
+	-- Fallback: any item of that rarity
 	if #eligible == 0 then
-		eligible = ItemDatabase.ByRarity[chosenRarity] or ItemDatabase.Items
+		for _, item in ipairs(ItemDatabase.Items) do
+			if item.Rarity == chosenRarity then
+				table.insert(eligible, item)
+			end
+		end
 	end
+
+	-- Final fallback: any item at all
+	if #eligible == 0 then eligible = ItemDatabase.Items end
 
 	return eligible[math.random(1, #eligible)]
 end
