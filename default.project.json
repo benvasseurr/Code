@@ -1,0 +1,55 @@
+{
+  "name": "LimitedCrates",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Modules": {
+        "$className": "Folder",
+        "ItemDatabase": {
+          "$path": "src/ReplicatedStorage/Modules/ItemDatabase.lua"
+        },
+        "CrateDatabase": {
+          "$path": "src/ReplicatedStorage/Modules/CrateDatabase.lua"
+        },
+        "SharedConfig": {
+          "$path": "src/ReplicatedStorage/Modules/SharedConfig.lua"
+        }
+      }
+    },
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "DataManager": {
+        "$path": "src/ServerScriptService/DataManager.server.lua"
+      },
+      "GameServer": {
+        "$path": "src/ServerScriptService/GameServer.server.lua"
+      }
+    },
+
+    "StarterGui": {
+      "$className": "StarterGui",
+      "MainGui": {
+        "$className": "ScreenGui",
+        "ResetOnSpawn": false,
+        "IgnoreGuiInset": true,
+        "DisplayOrder": 5,
+        "MainGui": {
+          "$path": "src/StarterGui/MainGui/MainGui.lua"
+        }
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "ClientHandler": {
+          "$path": "src/StarterPlayerScripts/ClientHandler.client.lua"
+        }
+      }
+    }
+  }
+}
