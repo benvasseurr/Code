@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 — Family Predictions</title>
+<style>
+  :root {
+    --green: #1a5c38;
+    --green-dark: #0f3a22;
+    --green-light: #2d8653;
+    --gold: #f0b429;
+    --gold-light: #fde68a;
+    --bg: #f4f7f4;
+    --card: #ffffff;
+    --text: #1a2e1a;
+    --muted: #6b7c6b;
+    --border: #d1e0d1;
+    --red: #dc2626;
+    --blue: #1d4ed8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 60%, var(--green-light) 100%);
+    color: white; padding: 20px 16px 0; text-align: center;
+  }
+  header h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
+  header p { font-size: 0.85rem; opacity: 0.8; margin: 4px 0 16px; }
+  .tabs { display: flex; justify-content: center; gap: 4px; }
+  .tab {
+    padding: 10px 20px; border: none; background: transparent; color: rgba(255,255,255,0.7);
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 8px 8px 0 0;
+    transition: all 0.15s;
+  }
+  .tab.active { background: var(--bg); color: var(--green-dark); }
+  .tab:hover:not(.active) { background: rgba(255,255,255,0.1); color: white; }
+
+  main { max-width: 900px; margin: 0 auto; padding: 20px 12px; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .card-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 12px; }
+
+  /* Leaderboard */
+  .leaderboard-table { width: 100%; border-collapse: collapse; }
+  .leaderboard-table th { text-align: left; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 2px solid var(--border); }
+  .leaderboard-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .leaderboard-table tr:last-child td { border-bottom: none; }
+  .rank { font-weight: 800; color: var(--muted); width: 32px; }
+  .rank.gold { color: #b7791f; }
+  .rank.silver { color: #718096; }
+  .rank.bronze { color: #c05621; }
+  .pts { font-weight: 800; font-size: 1.05rem; color: var(--green); }
+  .stat { color: var(--muted); font-size: 0.82rem; }
+
+  /* Scoring legend */
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--muted); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; }
+  .badge.exact { background: var(--gold-light); color: #92400e; }
+  .badge.result { background: #dcfce7; color: #166534; }
+  .badge.wrong { background: #fee2e2; color: #991b1b; }
+
+  /* Group matches */
+  .group-header {
+    background: var(--green-dark); color: white;
+    padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 0.85rem;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .group-header .chevron { margin-left: auto; transition: transform 0.2s; }
+  .group-header.collapsed .chevron { transform: rotate(-90deg); }
+  .group-body { margin-bottom: 16px; }
+  .group-body.hidden { display: none; }
+
+  .match-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 8px; overflow: hidden;
+  }
+  .match-header { display: flex; align-items: center; padding: 10px 14px; gap: 10px; background: #f9fafb; border-bottom: 1px solid var(--border); }
+  .match-teams { flex: 1; font-weight: 700; font-size: 0.95rem; }
+  .match-date { font-size: 0.75rem; color: var(--muted); }
+  .score-area { display: flex; align-items: center; gap: 6px; }
+  .score-input { width: 40px; text-align: center; padding: 4px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; font-weight: 700; }
+  .score-sep { font-weight: 700; color: var(--muted); }
+  .btn-save { padding: 5px 12px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+  .btn-save:hover { background: var(--green-dark); }
+  .actual-score { font-size: 1rem; font-weight: 800; color: var(--green-dark); background: var(--gold-light); padding: 3px 10px; border-radius: 6px; }
+
+  .predictions-row { padding: 8px 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .prediction-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: #f0f4f0; border-radius: 8px; padding: 5px 10px; font-size: 0.82rem;
+  }
+  .prediction-chip .player-name { font-weight: 600; color: var(--text); }
+  .prediction-chip .pred-score { color: var(--muted); }
+  .prediction-chip .pred-pts { font-weight: 800; font-size: 0.75rem; }
+  .prediction-chip.exact { background: var(--gold-light); }
+  .prediction-chip.result { background: #dcfce7; }
+  .prediction-chip.wrong { background: #fee2e2; }
+  .prediction-chip.pending { background: #f0f4f0; }
+
+  .add-pred-row { padding: 8px 14px; border-top: 1px dashed var(--border); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .add-pred-row label { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+  .pred-player-select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; }
+  .pred-score-input { width: 36px; text-align: center; padding: 4px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; }
+  .btn-add-pred { padding: 4px 12px; background: var(--blue); color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+  .btn-add-pred:hover { background: #1e40af; }
+
+  /* Players */
+  .players-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .player-chip {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 99px;
+    padding: 6px 14px; font-size: 0.9rem; font-weight: 600;
+  }
+  .player-chip .avatar {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--green);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 800;
+  }
+  .btn-remove { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1rem; line-height: 1; }
+  .btn-remove:hover { color: var(--red); }
+  .add-player-form { display: flex; gap: 8px; }
+  .add-player-form input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
+  .btn-primary { padding: 8px 18px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { background: var(--green-dark); }
+
+  .notice { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; color: #92400e; margin-bottom: 16px; }
+
+  .empty { text-align: center; padding: 40px; color: var(--muted); }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.3rem; }
+    .match-header { flex-wrap: wrap; }
+    .leaderboard-table th:nth-child(n+4), .leaderboard-table td:nth-child(n+4) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚽ World Cup 2026 Predictions</h1>
+  <p>Family prediction tracker</p>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('leaderboard')">🏆 Leaderboard</button>
+    <button class="tab" onclick="showTab('matches')">📅 Matches</button>
+    <button class="tab" onclick="showTab('players')">👥 Players</button>
+  </div>
+</header>
+
+<main>
+  <!-- LEADERBOARD -->
+  <div id="tab-leaderboard" class="section active">
+    <div class="legend">
+      <div class="legend-item"><span class="badge exact">3 pts</span> Exact score</div>
+      <div class="legend-item"><span class="badge result">1 pt</span> Correct result</div>
+      <div class="legend-item"><span class="badge wrong">0 pts</span> Wrong</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Rankings</div>
+      <div id="leaderboard-content"><div class="empty">Add players and predictions to see the leaderboard.</div></div>
+    </div>
+  </div>
+
+  <!-- MATCHES -->
+  <div id="tab-matches" class="section">
+    <div class="notice">⚠️ Match dates are approximate. Verify the official schedule at <strong>FIFA.com</strong> and update scores as matches are played.</div>
+    <div id="matches-content"></div>
+  </div>
+
+  <!-- PLAYERS -->
+  <div id="tab-players" class="section">
+    <div class="card">
+      <div class="card-title">Family Members</div>
+      <div id="players-list" class="players-list"></div>
+      <div class="add-player-form">
+        <input type="text" id="new-player-name" placeholder="Enter name…" maxlength="30" onkeydown="if(event.key==='Enter')addPlayer()">
+        <button class="btn-primary" onclick="addPlayer()">Add Player</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const GROUPS = [
+  { id: 'A', teams: ['Argentina', 'Canada', 'Chile', 'Peru'] },
+  { id: 'B', teams: ['Spain', 'Japan', 'Morocco', 'South Korea'] },
+  { id: 'C', teams: ['Brazil', 'Germany', 'Colombia', 'Costa Rica'] },
+  { id: 'D', teams: ['France', 'Uruguay', 'Portugal', 'Ecuador'] },
+  { id: 'E', teams: ['England', 'USA', 'Mexico', 'Panama'] },
+  { id: 'F', teams: ['Netherlands', 'Italy', 'Croatia', 'Senegal'] },
+  { id: 'G', teams: ['Belgium', 'Denmark', 'South Africa', 'Bolivia'] },
+  { id: 'H', teams: ['Poland', 'Turkey', 'Switzerland', 'DR Congo'] },
+  { id: 'I', teams: ['Serbia', 'Ukraine', 'Iran', 'Saudi Arabia'] },
+  { id: 'J', teams: ['Egypt', 'Nigeria', 'Cameroon', 'Tunisia'] },
+  { id: 'K', teams: ['Australia', 'New Zealand', 'Qatar', 'Honduras'] },
+  { id: 'L', teams: ['Jamaica', 'Venezuela', 'Paraguay', 'Morocco B'] },
+];
+
+// Generate all 6 matches per group (each pair once)
+function buildMatches() {
+  const matches = [];
+  let id = 1;
+  GROUPS.forEach(g => {
+    const t = g.teams;
+    [[0,1],[0,2],[1,2],[0,3],[1,3],[2,3]].forEach(([a,b]) => {
+      matches.push({ id: String(id++), group: g.id, home: t[a], away: t[b], date: '' });
+    });
+  });
+  return matches;
+}
+const MATCHES = buildMatches();
+
+// ── State ─────────────────────────────────────────────────────────────────────
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('wc2026_tracker') || '{}'); } catch { return {}; }
+}
+function saveState(s) { localStorage.setItem('wc2026_tracker', JSON.stringify(s)); }
+
+let state = loadState();
+if (!state.players) state.players = [];
+if (!state.results) state.results = {};   // matchId -> {home, away}
+if (!state.predictions) state.predictions = {}; // matchId -> [{playerId, home, away}]
+
+function persist() { saveState(state); }
+
+// ── Scoring ───────────────────────────────────────────────────────────────────
+
+function getResult(h, a) {
+  if (h > a) return 'H'; if (a > h) return 'A'; return 'D';
+}
+function scorePoints(actual, pred) {
+  if (actual.home === pred.home && actual.away === pred.away) return 3;
+  if (getResult(actual.home, actual.away) === getResult(pred.home, pred.away)) return 1;
+  return 0;
+}
+function chipClass(actual, pred) {
+  if (!actual) return 'pending';
+  const p = scorePoints(actual, pred);
+  return p === 3 ? 'exact' : p === 1 ? 'result' : 'wrong';
+}
+
+function playerTotals() {
+  return state.players.map(p => {
+    let pts = 0, predicted = 0, correct = 0, exact = 0;
+    MATCHES.forEach(m => {
+      const preds = state.predictions[m.id] || [];
+      const pred = preds.find(x => x.playerId === p.id);
+      const actual = state.results[m.id];
+      if (pred) {
+        predicted++;
+        if (actual) {
+          const sp = scorePoints(actual, pred);
+          pts += sp;
+          if (sp === 1) correct++;
+          if (sp === 3) { correct++; exact++; }
+        }
+      }
+    });
+    return { ...p, pts, predicted, correct, exact };
+  }).sort((a, b) => b.pts - a.pts || b.exact - a.exact || b.correct - a.correct);
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const idx = ['leaderboard','matches','players'].indexOf(name);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'leaderboard') renderLeaderboard();
+  if (name === 'matches') renderMatches();
+  if (name === 'players') renderPlayers();
+}
+
+// ── Leaderboard ───────────────────────────────────────────────────────────────
+
+function renderLeaderboard() {
+  const el = document.getElementById('leaderboard-content');
+  const totals = playerTotals();
+  if (totals.length === 0) { el.innerHTML = '<div class="empty">Add players in the Players tab to get started.</div>'; return; }
+  const rankIcon = i => ['🥇','🥈','🥉'][i] || (i+1);
+  const rankClass = i => ['gold','silver','bronze'][i] || '';
+  el.innerHTML = `<table class="leaderboard-table">
+    <thead><tr>
+      <th>#</th><th>Name</th><th>Points</th><th>Predicted</th><th>Correct</th><th>Exact</th>
+    </tr></thead>
+    <tbody>
+    ${totals.map((p,i) => `<tr>
+      <td class="rank ${rankClass(i)}">${rankIcon(i)}</td>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td class="pts">${p.pts}</td>
+      <td class="stat">${p.predicted}</td>
+      <td class="stat">${p.correct}</td>
+      <td class="stat">${p.exact}</td>
+    </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ── Matches ───────────────────────────────────────────────────────────────────
+
+function renderMatches() {
+  const el = document.getElementById('matches-content');
+  let html = '';
+  GROUPS.forEach(g => {
+    const gMatches = MATCHES.filter(m => m.group === g.id);
+    html += `<div class="group-header" onclick="toggleGroup('${g.id}',this)">
+      Group ${g.id} <span style="opacity:0.7;font-weight:400;font-size:0.8rem">${g.teams.join(', ')}</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="group-body" id="group-${g.id}">`;
+    gMatches.forEach(m => { html += renderMatch(m); });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderMatch(m) {
+  const actual = state.results[m.id];
+  const preds = state.predictions[m.id] || [];
+  const players = state.players;
+
+  const scoreSection = actual
+    ? `<span class="actual-score">${actual.home} – ${actual.away}</span>
+       <button class="btn-save" onclick="clearResult('${m.id}')">Edit</button>`
+    : `<input class="score-input" type="number" min="0" max="20" id="rh-${m.id}" placeholder="0">
+       <span class="score-sep">–</span>
+       <input class="score-input" type="number" min="0" max="20" id="ra-${m.id}" placeholder="0">
+       <button class="btn-save" onclick="saveResult('${m.id}')">Save</button>`;
+
+  const predChips = preds.length
+    ? preds.map(pred => {
+        const pl = players.find(p => p.id === pred.playerId);
+        if (!pl) return '';
+        const cc = chipClass(actual, pred);
+        const pts = actual ? scorePoints(actual, pred) : null;
+        return `<div class="prediction-chip ${cc}">
+          <span class="player-name">${esc(pl.name)}</span>
+          <span class="pred-score">${pred.home}–${pred.away}</span>
+          ${actual ? `<span class="pred-pts">${pts}pt${pts!==1?'s':''}</span>` : ''}
+          <button class="btn-remove" onclick="removePred('${m.id}','${pred.playerId}')" title="Remove">×</button>
+        </div>`;
+      }).join('')
+    : '<span style="font-size:0.8rem;color:var(--muted)">No predictions yet</span>';
+
+  const missingPlayers = players.filter(p => !preds.find(x => x.playerId === p.id));
+  const addPredSection = missingPlayers.length
+    ? `<div class="add-pred-row">
+        <label>Add prediction:</label>
+        <select class="pred-player-select" id="pp-${m.id}">
+          ${missingPlayers.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}
+        </select>
+        <input class="pred-score-input" type="number" min="0" max="20" id="ph-${m.id}" placeholder="0">
+        <span class="score-sep">–</span>
+        <input class="pred-score-input" type="number" min="0" max="20" id="pa-${m.id}" placeholder="0">
+        <button class="btn-add-pred" onclick="addPred('${m.id}')">Add</button>
+      </div>` : '';
+
+  return `<div class="match-card" id="mc-${m.id}">
+    <div class="match-header">
+      <div class="match-teams">${esc(m.home)} <span style="color:var(--muted)">vs</span> ${esc(m.away)}</div>
+      <div class="match-date">Group ${m.group}</div>
+      <div class="score-area">${scoreSection}</div>
+    </div>
+    <div class="predictions-row">${predChips}</div>
+    ${addPredSection}
+  </div>`;
+}
+
+function toggleGroup(id, el) {
+  el.classList.toggle('collapsed');
+  document.getElementById('group-' + id).classList.toggle('hidden');
+}
+
+function saveResult(matchId) {
+  const h = parseInt(document.getElementById('rh-' + matchId)?.value);
+  const a = parseInt(document.getElementById('ra-' + matchId)?.value);
+  if (isNaN(h) || isNaN(a)) { alert('Please enter both scores.'); return; }
+  state.results[matchId] = { home: h, away: a };
+  persist();
+  refreshMatchCard(matchId);
+  if (document.getElementById('tab-leaderboard').classList.contains('active')) renderLeaderboard();
+}
+
+function clearResult(matchId) {
+  delete state.results[matchId];
+  persist();
+  refreshMatchCard(matchId);
+}
+
+function addPred(matchId) {
+  const playerId = document.getElementById('pp-' + matchId)?.value;
+  const h = parseInt(document.getElementById('ph-' + matchId)?.value);
+  const a = parseInt(document.getElementById('pa-' + matchId)?.value);
+  if (!playerId) return;
+  if (isNaN(h) || isNaN(a)) { alert('Enter both predicted scores.'); return; }
+  if (!state.predictions[matchId]) state.predictions[matchId] = [];
+  state.predictions[matchId].push({ playerId, home: h, away: a });
+  persist();
+  refreshMatchCard(matchId);
+}
+
+function removePred(matchId, playerId) {
+  state.predictions[matchId] = (state.predictions[matchId] || []).filter(p => p.playerId !== playerId);
+  persist();
+  refreshMatchCard(matchId);
+}
+
+function refreshMatchCard(matchId) {
+  const m = MATCHES.find(x => x.id === matchId);
+  const el = document.getElementById('mc-' + matchId);
+  if (el) el.outerHTML = renderMatch(m);
+}
+
+// ── Players ───────────────────────────────────────────────────────────────────
+
+function renderPlayers() {
+  const el = document.getElementById('players-list');
+  if (state.players.length === 0) { el.innerHTML = '<div class="empty">No players yet.</div>'; return; }
+  el.innerHTML = state.players.map(p => `
+    <div class="player-chip">
+      <div class="avatar">${esc(p.name.slice(0,2).toUpperCase())}</div>
+      ${esc(p.name)}
+      <button class="btn-remove" onclick="removePlayer('${p.id}')" title="Remove">×</button>
+    </div>`).join('');
+}
+
+function addPlayer() {
+  const input = document.getElementById('new-player-name');
+  const name = input.value.trim();
+  if (!name) return;
+  if (state.players.find(p => p.name.toLowerCase() === name.toLowerCase())) { alert('That name is already added.'); return; }
+  state.players.push({ id: 'p' + Date.now(), name });
+  persist();
+  input.value = '';
+  renderPlayers();
+}
+
+function removePlayer(id) {
+  if (!confirm('Remove this player? Their predictions will also be removed.')) return;
+  state.players = state.players.filter(p => p.id !== id);
+  Object.keys(state.predictions).forEach(mid => {
+    state.predictions[mid] = state.predictions[mid].filter(x => x.playerId !== id);
+  });
+  persist();
+  renderPlayers();
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+renderLeaderboard();
+</script>
+</body>
+</html>
